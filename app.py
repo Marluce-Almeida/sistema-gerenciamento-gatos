@@ -1,5 +1,6 @@
 
 from flask import Flask, render_template_string, request, redirect, url_for
+from markupsafe import escape
 import sqlite3
 
 app = Flask(__name__)
@@ -142,7 +143,6 @@ MODELO = """
 </body>
 </html>
 """
-
 @app.route("/")
 def inicio():
     banco = conectar()
@@ -157,6 +157,10 @@ def inicio():
 
     doacoes = banco.execute(
         "SELECT COUNT(*) FROM doacoes"
+    ).fetchone()[0]
+
+    total_arrecadado = banco.execute(
+        "SELECT COALESCE(SUM(valor), 0) FROM doacoes"
     ).fetchone()[0]
 
     banco.close()
@@ -177,6 +181,10 @@ def inicio():
         <div class="card">
             <h3>🎁 Doações registradas</h3>
             <h2>{doacoes}</h2>
+        </div>
+        <div class="card">
+            <h3>💰 Total arrecadado</h3>
+            <h2>R$ {total_arrecadado:.2f}</h2>
         </div>
     </div>
 
@@ -255,10 +263,10 @@ def gatos():
     for gato in lista:
         conteudo += f"""
         <tr>
-            <td>{gato['nome']}</td>
-            <td>{gato['idade'] or '-'}</td>
-            <td>{gato['sexo'] or '-'}</td>
-            <td>{gato['observacao'] or '-'}</td>
+            <<td>{escape(gato['nome'])}</td>
+<td>{escape(gato['idade'] or '-')}</td>
+<td>{escape(gato['sexo'] or '-')}</td>
+<td>{escape(gato['observacao'] or '-')}</td>
         </tr>
         """
 
